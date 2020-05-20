@@ -75,13 +75,12 @@
         },
         methods: {
           connect() {
+            const characteristicUuid = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+            const serviceUuid = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
             navigator.bluetooth
               .requestDevice({
                 filters: [{ name: "ESP32" }],
-                optionalServices: [
-                  "4fafc201-1fb5-459e-8fcc-c5c9c331914b",
-                  "beb5483e-36e1-4688-b7f5-ea07361b26a8",
-                ],
+                optionalServices: [serviceUuid, characteristicUuid],
               })
               .then((device) => {
                 this.name = device.name;
@@ -90,7 +89,7 @@
                   this.$q.notify({
                     position: "center",
                     message: `Device ${this.name} is disconnected`,
-                    color: "red",
+                    type: 'negative',
                   });
                   this.progress = false;
                   this.deviceConect = false;
@@ -98,33 +97,29 @@
                 return device.gatt.connect();
               })
               .then((server) => {
-                return server.getPrimaryService(
-                  "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-                );
+                return server.getPrimaryService(serviceUuid);
               })
-              .then((service) => {
-                return service.getCharacteristic(
-                  "beb5483e-36e1-4688-b7f5-ea07361b26a8"
-                );
-              })
+              .then((service) => service.getCharacteristic(characteristicUuid))
               .then((characteristic) => characteristic.startNotifications())
               .then((characteristic) => {
                 this.deviceConect = true;
                 this.$q.notify({
                   position: "center",
                   message: `connected to ${this.name}`,
-                  color: "green",
+                  type: 'positive',
                 });
                 characteristic.addEventListener(
                   "characteristicvaluechanged",
-                  (event) => {
-                    var value = event.target.value.getUint8(0);
-                    this.data = value;
-                  }
+                  (event) => (this.data = event.target.value.getUint8(0))
                 );
               })
               .catch((error) => {
                 console.log(error);
+                this.$q.notify({
+                  position: "center",
+                  message: `Error ${error} `,
+                  type: "warning",
+                });
               });
           },
         },
