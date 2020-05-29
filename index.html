@@ -1,129 +1,111 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/animate.css@^4.0.0/animate.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/quasar@1.11.3/dist/quasar.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <title>Bluetooth</title>
-  </head>
-  <body>
-    <div id="q-app">
-      <template>
-        <q-layout view="hHh lpR fFf">
-          <q-page-container>
-            <q-page padding>
-              <q-btn
-                v-if="!deviceConect"
-                class="full-width"
-                :loading="progress"
-                color="primary"
-                @click="connect()"
-              >
-                <q-icon name="bluetooth"></q-icon>
-                connect device
-                <template v-slot:loading>
-                  <q-icon name="bluetooth"></q-icon>
-                  <q-spinner-radio class="on-left"></q-spinner-radio>
-                  connecting to {{name}}
-                </template>
-              </q-btn>
-              <div v-if="deviceConect" class="full-width text-center">
-                <q-chip
-                  outline
-                  square
-                  color="primary"
-                  text-color="white"
-                  icon="bluetooth"
-                >
-                  Num: {{data}}
-                </q-chip>
-              </div>
-            </q-page>
-          </q-page-container>
-        </q-layout>
-      </template>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue@^2.0.0/dist/vue.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quasar@1.11.3/dist/quasar.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quasar@1.11.3/dist/lang/es.umd.min.js"></script>
 
-    <script>
-      Quasar.lang.set(Quasar.lang.es);
-      new Vue({
-        el: "#q-app",
-        data: function () {
-          return {
-            name: null,
-            progress: false,
-            data: null,
-            deviceConect: false,
-          };
-        },
-        methods: {
-          connect() {
-            const characteristicUuid = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
-            const serviceUuid = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-            navigator.bluetooth
-              .requestDevice({
-                filters: [{ name: "ESP32" }],
-                optionalServices: [serviceUuid, characteristicUuid],
-              })
-              .then((device) => {
-                this.name = device.name;
-                this.progress = true;
-                device.addEventListener("gattserverdisconnected", (event) => {
-                  this.$q.notify({
-                    position: "center",
-                    message: `Device ${this.name} is disconnected`,
-                    type: 'negative',
-                  });
-                  this.progress = false;
-                  this.deviceConect = false;
-                });
-                return device.gatt.connect();
-              })
-              .then((server) => {
-                return server.getPrimaryService(serviceUuid);
-              })
-              .then((service) => service.getCharacteristic(characteristicUuid))
-              .then((characteristic) => characteristic.startNotifications())
-              .then((characteristic) => {
-                this.deviceConect = true;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp"
+    rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/animate.css@^4.0.0/animate.min.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/quasar@1.11.3/dist/quasar.min.css" rel="stylesheet" type="text/css" />
+  <title>Bluetooth</title>
+</head>
+
+<body>
+  <!-- hola desde pc -->
+  <div id="q-app">
+    <template>
+      <q-layout view="hHh lpR fFf">
+        <q-page-container>
+          <q-page padding>
+            <q-btn v-if="!deviceConect" class="full-width" :loading="progress" color="primary" @click="connect()">
+              <q-icon name="bluetooth"></q-icon>
+              connect device
+              <template v-slot:loading>
+                <q-icon name="bluetooth"></q-icon>
+                <q-spinner-radio class="on-left"></q-spinner-radio>
+                connecting to {{name}}
+              </template>
+            </q-btn>
+            <div v-if="deviceConect" class="full-width text-center">
+              <q-chip outline square color="primary" text-color="white" icon="bluetooth">
+                Num: {{data}}
+              </q-chip>
+            </div>
+          </q-page>
+        </q-page-container>
+      </q-layout>
+    </template>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@^2.0.0/dist/vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quasar@1.11.3/dist/quasar.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quasar@1.11.3/dist/lang/es.umd.min.js"></script>
+
+  <script>
+    Quasar.lang.set(Quasar.lang.es);
+    new Vue({
+      el: "#q-app",
+      data: function () {
+        return {
+          name: null,
+          progress: false,
+          data: null,
+          deviceConect: false,
+        };
+      },
+      methods: {
+        connect() {
+          const characteristicUuid = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+          const serviceUuid = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+          navigator.bluetooth
+            .requestDevice({
+              filters: [{ name: "ESP32" }],
+              optionalServices: [serviceUuid, characteristicUuid],
+            })
+            .then((device) => {
+              this.name = device.name;
+              this.progress = true;
+              device.addEventListener("gattserverdisconnected", (event) => {
                 this.$q.notify({
                   position: "center",
-                  message: `connected to ${this.name}`,
-                  type: 'positive',
+                  message: `Device ${this.name} is disconnected`,
+                  type: 'negative',
                 });
-                characteristic.addEventListener(
-                  "characteristicvaluechanged",
-                  (event) => (this.data = event.target.value.getUint8(0))
-                );
-              })
-              .catch((error) => {
-                console.log(error);
-                this.$q.notify({
-                  position: "center",
-                  message: `Error ${error} `,
-                  type: "warning",
-                });
+                this.progress = false;
+                this.deviceConect = false;
               });
-          },
+              return device.gatt.connect();
+            })
+            .then((server) => {
+              return server.getPrimaryService(serviceUuid);
+            })
+            .then((service) => service.getCharacteristic(characteristicUuid))
+            .then((characteristic) => characteristic.startNotifications())
+            .then((characteristic) => {
+              this.deviceConect = true;
+              this.$q.notify({
+                position: "center",
+                message: `connected to ${this.name}`,
+                type: 'positive',
+              });
+              characteristic.addEventListener(
+                "characteristicvaluechanged",
+                (event) => (this.data = event.target.value.getUint8(0))
+              );
+            })
+            .catch((error) => {
+              console.log(error);
+              this.$q.notify({
+                position: "center",
+                message: `Error ${error} `,
+                type: "warning",
+              });
+            });
         },
-      });
-    </script>
-  </body>
+      },
+    });
+  </script>
+</body>
+
 </html>
